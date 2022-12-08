@@ -4,33 +4,32 @@ const AWS_SDK = require('aws-sdk');
 const s3Client = new AWS_SDK.S3();
 
 exports.handler = async (event) => {
-    console.log(event.Records[0].s3);
     const {
       bucket,
       object
     } = event.Records[0].s3;
     
-    // let uploadedFile = await s3Client.send(new GetObjectCommand({
-    //   Bucket: bucket.name,
-    //   Key: object.name
-    // }));
-    
+    let uploadedImage = await s3Client.getObject({
+      Bucket: bucket.name,
+      Key: object.key
+    }).promise();
+
     let uploadedFile = await s3Client.getObject({
       Bucket: bucket.name,
-      Key: 'data.json'
+      Key: 'images.json'
     }).promise();
+
     
     let jsonObject = JSON.parse(uploadedFile.Body.toString());
     
-    jsonObject.key2 = 'value2';
+    jsonObject[jsonObject.length] = {"new key": "new value"};
     
     let newObject = await s3Client.putObject({
       Bucket: bucket.name,
-      Key: 'data.json',
+      Key: 'images.json',
       Body: JSON.stringify(jsonObject), // what goes here?
     }).promise();
     
-    console.log(jsonObject, newObject);
     
     // TODO implement
     const response = {
